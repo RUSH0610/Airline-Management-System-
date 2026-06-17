@@ -1,0 +1,95 @@
+﻿CREATE SCHEMA Airline_Management;
+SET search_path TO Airline_Management;
+
+
+CREATE TABLE "User" (
+    user_id CHAR(15) PRIMARY KEY,
+    name VARCHAR(50),
+    email VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(40) NOT NULL,
+    contact_info VARCHAR(20),
+    user_type VARCHAR(15)
+);
+
+
+CREATE TABLE Guest_User (
+    user_id CHAR(15) PRIMARY KEY REFERENCES "User"(user_id)
+);
+
+
+CREATE TABLE Registered_User (
+    user_id CHAR(15) PRIMARY KEY REFERENCES "User"(user_id),
+    passport_number VARCHAR(15)
+);
+
+
+CREATE TABLE Airport (
+    airport_id CHAR(30) PRIMARY KEY,
+    airport_name VARCHAR(100),
+    location VARCHAR(100),
+    facilities VARCHAR(100)
+);
+
+
+CREATE TABLE Aircraft (
+    aircraft_id CHAR(20) PRIMARY KEY,
+    model VARCHAR(40),
+    capacity INTEGER,
+    maintenance_status VARCHAR(15)
+);
+CREATE TABLE Flight (
+    flight_id CHAR(15) PRIMARY KEY,
+    departure_time TIME,
+    arrival_time TIME,
+    duration FLOAT,
+    price FLOAT,
+    aircraft_id CHAR(20) REFERENCES Aircraft(aircraft_id),
+    airline_id CHAR(10),
+    departure_airport VARCHAR(100) REFERENCES Airport(airport_id),
+    arrival_airport VARCHAR(100) REFERENCES Airport(airport_id)
+);
+
+
+CREATE TABLE Crew_Member (
+    crew_id VARCHAR(30) PRIMARY KEY,
+    name VARCHAR(60),
+    role VARCHAR(50),
+    assigned_flight_id CHAR(15) REFERENCES Flight(flight_id)
+);
+
+
+CREATE TABLE Review (
+    user_id CHAR(15),
+    flight_id CHAR(15),
+    rating INTEGER,
+    PRIMARY KEY (user_id, flight_id),
+    FOREIGN KEY (user_id) REFERENCES "User"(user_id),
+    FOREIGN KEY (flight_id) REFERENCES Flight(flight_id)
+);
+
+
+CREATE TABLE Booking (
+    booking_id CHAR(15) PRIMARY KEY,
+    user_id CHAR(15) REFERENCES "User"(user_id),
+    flight_id CHAR(15) REFERENCES Flight(flight_id),
+    status VARCHAR(10),
+    date DATE
+);
+
+
+
+
+CREATE TABLE Maintenance (
+    maintenance_id CHAR(15) PRIMARY KEY,
+    aircraft_id CHAR(20) REFERENCES Aircraft(aircraft_id),
+    date DATE,
+    status VARCHAR(15)
+);
+
+
+CREATE TABLE Ticket (
+    ticket_id CHAR(12) PRIMARY KEY,
+    booking_id CHAR(15) REFERENCES Booking(booking_id),
+    date DATE,
+    status VARCHAR(10)
+);

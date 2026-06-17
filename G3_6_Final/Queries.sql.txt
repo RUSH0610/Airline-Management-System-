@@ -1,0 +1,157 @@
+Queries:(HERE WE HAVE WRITTEN GENERALISED QUERY AND IN SQL WE HAVE TAKEN A RANDOM VALUE AS LIMIT,DATA etc.)
+
+1.) Retrieve the cheapest available flight for a particular given flight route
+
+SET search_path TO Airline_Management;
+
+SELECT flight_id, price
+FROM Flight
+WHERE departure_airport = 'AIR001' AND arrival_airport = 'AIR002'
+ORDER BY price ASC
+LIMIT 1;
+
+
+2.) Display the total number of passengers for a particular given flight.
+
+SET search_path TO Airline_Management;
+
+SELECT f.flight_id, COUNT(t.ticket_id) AS passenger_count
+FROM Flight f
+JOIN Booking b ON f.flight_id = b.flight_id
+JOIN Ticket t ON b.booking_id = t.booking_id
+WHERE f.flight_id = 'FL00001' AND t.status = 'issued'
+GROUP BY f.flight_id;
+
+
+3.) Display all aircraft that are currently under maintenance or being fixed
+
+SET search_path TO Airline_Management;
+
+SELECT aircraft_id, model
+FROM Aircraft
+WHERE maintenance_status = 'under Repair';
+
+4.) Display all available flights between two cities for a given date range
+
+SET search_path TO Airline_Management;
+
+SELECT DISTINCT f.flight_id, f.departure_time, f.arrival_time, f.price
+FROM Flight f
+JOIN Booking b ON f.flight_id = b.flight_id
+WHERE f.departure_airport = 'AIR001' AND f.arrival_airport = 'AIR002'
+  AND b.date BETWEEN '2025-04-01' AND '2025-04-20';
+
+5.) Most frequently used airports (by flight count)
+
+SELECT 
+    Airport.airport_id,
+    Airport.airport_name,
+    COUNT(*) AS usage_count
+FROM (
+    SELECT departure_airport AS airport_id FROM Flight
+    UNION ALL
+    SELECT arrival_airport AS airport_id FROM Flight
+) AS all_airports
+JOIN Airport ON all_airports.airport_id = Airport.airport_id
+GROUP BY Airport.airport_id, Airport.airport_name
+ORDER BY COUNT(*) DESC;
+
+
+
+6.) Top-rated flights based on user reviews
+
+SET search_path TO Airline_Management;
+
+SELECT flight_id, ROUND(AVG(rating), 2) AS avg_rating, COUNT(*) AS total_reviews
+FROM Review
+GROUP BY flight_id
+ORDER BY avg_rating DESC
+LIMIT 5;
+
+7.) Give a list of pilots and co-pilots
+
+SET search_path TO Airline_Management;
+
+SELECT name, role, assigned_flight_id
+FROM Crew_Member
+WHERE role IN ('Pilot', 'Co-Pilot');
+
+8.) Passengers who reviewed more than 5 flights
+ 
+SET search_path TO Airline_Management;
+
+SELECT u.user_id, u.name, COUNT(*) AS total_reviews
+FROM Review r
+JOIN "User" u ON u.user_id = r.user_id
+GROUP BY u.user_id, u.name
+HAVING COUNT(*) > 5;
+
+9.) Registered users who have never written a review
+
+SET search_path TO Airline_Management;
+
+SELECT u.user_id, u.name
+FROM Registered_User ru
+JOIN "User" u ON ru.user_id = u.user_id
+WHERE u.user_id NOT IN (
+    SELECT user_id FROM Review
+);
+
+10.) Flights scheduled during the night
+
+SET search_path TO Airline_Management;
+
+SELECT flight_id, departure_time
+FROM Flight
+WHERE departure_time BETWEEN '00:00' AND '06:00'
+   OR departure_time >= '22:00';
+
+11.) Detect inactive aircraft (never assigned to any flight)
+
+SET search_path TO Airline_Management;
+
+SELECT aircraft_id, model
+FROM Aircraft
+WHERE aircraft_id NOT IN (
+    SELECT DISTINCT aircraft_id FROM Flight
+);
+
+12.) Cancel the ticket and update it’s status to "Canceled." 
+
+SET search_path TO Airline_Management;
+
+UPDATE Ticket
+SET status = 'cancelled'
+WHERE ticket_id = 'T007';  -- Replace with the ticket you want to cancel
+
+13.)Identify popular routes (most frequently flown airport pairs)
+
+SET search_path TO Airline_Management;
+
+SELECT departure_airport, arrival_airport, COUNT(*) AS route_count
+FROM Flight
+GROUP BY departure_airport, arrival_airport
+ORDER BY route_count DESC
+LIMIT 5;
+
+14.)Show average duration of flights per airline
+
+SET search_path TO Airline_Management;
+
+SELECT 
+    airline_id, 
+    AVG(duration) AS average_duration_hours
+FROM 
+    Flight
+GROUP BY 
+    airline_id
+ORDER BY 
+    airline_id;
+
+15.) List of flights with flight duration more than 2 hours and cost < 5000(any value)
+
+SET search_path TO Airline_Management;
+
+SELECT flight_id, duration, price
+FROM Flight
+WHERE duration > 2 AND price < 5000;
